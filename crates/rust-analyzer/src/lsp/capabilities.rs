@@ -188,7 +188,7 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 "kinds": [ "cargo" ],
             },
             "serverStateProvider": {
-                "completeness": true,
+                "coverage": true,
                 "freshness": true,
             },
             "ssr": true,

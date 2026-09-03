@@ -657,7 +657,7 @@ Clients are discouraged from but are allowed to use the `health` status to decid
 
 **Experimental Client Capability:** `{ "serverState": boolean }`
 
-**Experimental Server Capability:** `{ "serverStateProvider": { "completeness": boolean, "freshness": boolean } }`
+**Experimental Server Capability:** `{ "serverStateProvider": { "coverage": boolean, "freshness": boolean } }`
 
 **Method:** `experimental/serverState`
 
@@ -696,10 +696,12 @@ work, and a client should not treat their empty answers as facts.
 The request answers with the current state at any time after `initialize`.
 The notification is sent whenever `health` or `readiness` changes, but only
 if the client declared the `serverState` capability. The server capability
-`serverStateProvider` declares the guarantees: `completeness` means that a
-workspace-wide request answered while `ready` sees every document in the
-workspace, and `freshness` means that it reflects every `didChange` sent
-before it.
+`serverStateProvider` declares the guarantees: `coverage` means that a
+workspace-wide request answered while `ready` is computed over the whole
+workspace index and will not grow later as indexing proceeds
+(`workspace/symbol` is not covered: it is a ranked search with a result
+limit), and `freshness` means that it reflects every `didChange` and
+`workspace/didChangeWatchedFiles` received before it.
 
 The vocabulary and the guarantees follow the server state protocol
 specification (https://github.com/tagawa0525/lsp-det), whose reference
