@@ -1,5 +1,5 @@
 <!---
-lsp/ext.rs hash: 98191ad3d886c851
+lsp/ext.rs hash: 45000b569f1c27b7
 
 If you need to change the above hash to make the test pass, please check if you
 need to adjust this doc as well and ping this issue:
@@ -652,6 +652,59 @@ It is similar to the `showMessage`, but is intended for status rather than point
 Note that this functionality is intended primarily to inform the end user about the state of the server.
 In particular, it's valid for the client to completely ignore this extension.
 Clients are discouraged from but are allowed to use the `health` status to decide if it's worth sending a request to the server.
+
+## Server State
+
+**Experimental Client Capability:** `{ "serverState": boolean }`
+
+**Experimental Server Capability:** `{ "serverStateProvider": { "completeness": boolean, "freshness": boolean } }`
+
+**Method:** `experimental/serverState`
+
+**Request:** none
+
+**Response:** `ServerState`
+
+**Notification:** `experimental/serverStateChanged` with `ServerState`
+
+```typescript
+interface ServerState {
+    /// Same meaning as in `ServerStatusParams`.
+    health: "ok" | "warning" | "error",
+    /// `initializing`: right after `initialize`, no workspace loaded yet.
+    ///
+    /// `indexing`: workspaces are being (re)loaded or caches are being
+    /// primed; answers to workspace-wide requests (references, definition,
+    /// workspace symbols, call hierarchy, rename, ...) may be incomplete.
+    ///
+    /// `ready`: fully loaded; answers to workspace-wide requests are
+    /// complete and reflect the documents the client has sent.
+    readiness: "initializing" | "indexing" | "ready",
+    /// Explanatory message, as in `ServerStatusParams`.
+    message?: string,
+}
+```
+
+The successor of `experimental/serverStatus` for clients (in particular
+coding agents) that need to know whether an answer to a workspace-wide
+request can be trusted, rather than a status line to display. `readiness`
+is `ready` exactly when the status is `quiescent`. `health` is the status
+health, except that a workspace that could not be discovered at all is
+reported as `error`: without a workspace, workspace-wide requests cannot
+work, and a client should not treat their empty answers as facts.
+
+The request answers with the current state at any time after `initialize`.
+The notification is sent whenever `health` or `readiness` changes, but only
+if the client declared the `serverState` capability. The server capability
+`serverStateProvider` declares the guarantees: `completeness` means that a
+workspace-wide request answered while `ready` sees every document in the
+workspace, and `freshness` means that it reflects every `didChange` sent
+before it.
+
+The vocabulary and the guarantees follow the server state protocol
+specification (https://github.com/tagawa0525/lsp-det), whose reference
+implementation derives the same values for rust-analyzer from
+`experimental/serverStatus`.
 
 ## Controlling Flycheck
 

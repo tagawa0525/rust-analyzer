@@ -592,6 +592,47 @@ pub enum Health {
     Error,
 }
 
+/// `experimental/serverState`: the successor of `experimental/serverStatus`
+/// with the server's readiness spelled out instead of a `quiescent` flag.
+pub enum ServerStateRequest {}
+
+impl Request for ServerStateRequest {
+    /// The request carries no parameters; clients send `null`, `{}` or nothing.
+    type Params = Option<serde_json::Value>;
+    type Result = ServerState;
+    const METHOD: LspRequestMethod<'_> = LspRequestMethod::new("experimental/serverState");
+    const MESSAGE_DIRECTION: MessageDirection = MessageDirection::ClientToServer;
+}
+
+pub enum ServerStateChangedNotification {}
+
+impl Notification for ServerStateChangedNotification {
+    type Params = ServerState;
+    const METHOD: LspNotificationMethod<'_> =
+        LspNotificationMethod::new("experimental/serverStateChanged");
+    const MESSAGE_DIRECTION: MessageDirection = MessageDirection::ClientToServer;
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ServerState {
+    pub health: Health,
+    pub readiness: Readiness,
+    pub message: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum Readiness {
+    /// Right after `initialize`; no workspace has been loaded yet.
+    Initializing,
+    /// Workspaces are being (re)loaded or the caches are being primed;
+    /// answers to workspace-wide requests may be incomplete.
+    Indexing,
+    /// Fully loaded: answers to workspace-wide requests are complete.
+    Ready,
+}
+
 impl ops::BitOrAssign for Health {
     fn bitor_assign(&mut self, rhs: Self) {
         *self = match (*self, rhs) {

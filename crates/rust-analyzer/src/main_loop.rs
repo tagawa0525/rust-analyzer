@@ -819,7 +819,25 @@ impl GlobalState {
         });
     }
 
+    /// Sends `experimental/serverStateChanged` when `health` or `readiness`
+    /// changed, if the client declared `experimental.serverState`.
+    fn notify_server_state_if_changed(&mut self) {
+        if !self.config.server_state() {
+            return;
+        }
+        let state = self.current_server_state();
+        let changed = match &self.last_reported_server_state {
+            Some(last) => last.health != state.health || last.readiness != state.readiness,
+            None => true,
+        };
+        if changed {
+            self.last_reported_server_state = Some(state.clone());
+            self.send_notification::<lsp_ext::ServerStateChangedNotification>(state);
+        }
+    }
+
     fn update_status_or_notify(&mut self) {
+        self.notify_server_state_if_changed();
         let status = self.current_status();
         if self.last_reported_status != status {
             self.last_reported_status = status.clone();
@@ -1355,6 +1373,7 @@ impl GlobalState {
             .on_sync_mut::<lsp_ext::RebuildProcMacrosRequest>(handlers::handle_proc_macros_rebuild)
             .on_sync_mut::<lsp_ext::MemoryUsageRequest>(handlers::handle_memory_usage)
             .on_sync_mut::<lsp_ext::RunTestRequest>(handlers::handle_run_test)
+            .on_sync_mut::<lsp_ext::ServerStateRequest>(handlers::handle_server_state)
             // Request handlers which are related to the user typing
             // are run on the main thread to reduce latency:
             .on_sync::<lsp_ext::JoinLinesRequest>(handlers::handle_join_lines)

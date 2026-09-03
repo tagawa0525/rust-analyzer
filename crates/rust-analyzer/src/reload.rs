@@ -125,6 +125,36 @@ impl GlobalState {
         }
     }
 
+    /// The server state (`experimental/serverState`), derived from the same
+    /// facts as [`Self::current_status`].
+    ///
+    /// `readiness` is `ready` exactly when the status is quiescent. Before the
+    /// first workspace has been loaded it is `initializing`, and `indexing`
+    /// otherwise. `health` is the status health, except that a workspace that
+    /// could not be discovered at all is `error` rather than `warning`:
+    /// without a workspace, workspace-wide requests cannot work.
+    pub(crate) fn current_server_state(&self) -> lsp_ext::ServerState {
+        let status = self.current_status();
+        // Before the first workspace has been loaded the status is trivially
+        // quiescent (nothing is in flight yet), but nothing is loaded either:
+        // that is `initializing`, not `ready`.
+        let nothing_loaded_yet = self.workspaces.is_empty() && self.fetch_workspace_error().is_ok();
+        let readiness = if nothing_loaded_yet {
+            lsp_ext::Readiness::Initializing
+        } else if status.quiescent {
+            lsp_ext::Readiness::Ready
+        } else {
+            lsp_ext::Readiness::Indexing
+        };
+        let mut health = status.health;
+        if self.config.linked_or_discovered_projects().is_empty()
+            && self.config.detached_files().is_empty()
+        {
+            health = lsp_ext::Health::Error;
+        }
+        lsp_ext::ServerState { health, readiness, message: status.message }
+    }
+
     pub(crate) fn current_status(&self) -> lsp_ext::ServerStatusParams {
         let mut status = lsp_ext::ServerStatusParams {
             health: lsp_ext::Health::Ok,

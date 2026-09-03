@@ -393,6 +393,14 @@ pub(crate) fn handle_selection_range(
     Ok(Some(res?))
 }
 
+pub(crate) fn handle_server_state(
+    state: &mut GlobalState,
+    _params: Option<serde_json::Value>,
+) -> anyhow::Result<lsp_ext::ServerState> {
+    let _p = tracing::info_span!("handle_server_state").entered();
+    Ok(state.current_server_state())
+}
+
 pub(crate) fn handle_matching_brace(
     snap: GlobalStateSnapshot,
     params: lsp_ext::MatchingBraceParams,

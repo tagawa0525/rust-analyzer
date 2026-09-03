@@ -187,6 +187,10 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             "runnables": {
                 "kinds": [ "cargo" ],
             },
+            "serverStateProvider": {
+                "completeness": true,
+                "freshness": true,
+            },
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
         })),
@@ -466,6 +470,11 @@ impl ClientCapabilities {
 
     pub fn server_status_notification(&self) -> bool {
         self.experimental_bool("serverStatusNotification")
+    }
+
+    /// The client understands `experimental/serverStateChanged`.
+    pub fn server_state(&self) -> bool {
+        self.experimental_bool("serverState")
     }
 
     pub fn snippet_text_edit(&self) -> bool {

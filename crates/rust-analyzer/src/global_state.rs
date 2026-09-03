@@ -104,6 +104,9 @@ pub(crate) struct GlobalState {
     // status
     pub(crate) shutdown_requested: bool,
     pub(crate) last_reported_status: lsp_ext::ServerStatusParams,
+    /// The last `experimental/serverState` sent to the client as
+    /// `experimental/serverStateChanged`, if the client asked for it.
+    pub(crate) last_reported_server_state: Option<lsp_ext::ServerState>,
 
     /// Clients of the proc-macro server.
     ///
@@ -284,6 +287,7 @@ impl GlobalState {
                 quiescent: true,
                 message: None,
             },
+            last_reported_server_state: None,
             source_root_config: SourceRootConfig::default(),
             local_roots_parent_map: Arc::new(FxHashMap::default()),
             config_errors: Default::default(),
