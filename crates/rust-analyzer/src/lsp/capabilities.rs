@@ -188,8 +188,11 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 "kinds": [ "cargo" ],
             },
             "serverStateProvider": {
-                "coverage": true,
-                "freshness": true,
+                "coverage": {
+                    "scope": "workspace",
+                    "incomplete": { "workspace/symbol": config.workspace_symbol(None).search_limit },
+                },
+                "freshness": { "fileChanges": ["Created", "Changed", "Deleted"] },
             },
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
