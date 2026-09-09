@@ -581,7 +581,21 @@ impl Notification for ServerStatusNotification {
 pub struct ServerStatusParams {
     pub health: Health,
     pub quiescent: bool,
+    pub readiness: Readiness,
     pub message: Option<String>,
+}
+
+/// Whether the answer to a workspace-wide request can be trusted to be complete.
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum Readiness {
+    /// Right after `initialize`; no workspace has been loaded yet.
+    Initializing,
+    /// Workspaces are being (re)loaded or the caches are being primed;
+    /// answers to workspace-wide requests may be incomplete.
+    Indexing,
+    /// Fully loaded: answers to workspace-wide requests are complete.
+    Ready,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]

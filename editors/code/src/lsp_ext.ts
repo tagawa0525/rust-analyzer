@@ -304,6 +304,7 @@ export type RunnablesParams = {
 export type ServerStatusParams = {
     health: "ok" | "warning" | "error";
     quiescent: boolean;
+    readiness: "initializing" | "indexing" | "ready";
     message?: string;
 };
 export type SsrParams = {

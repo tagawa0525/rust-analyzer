@@ -125,10 +125,29 @@ impl GlobalState {
         }
     }
 
+    /// The readiness reported in `experimental/serverStatus`.
+    ///
+    /// Before the first workspace has been loaded the server is trivially
+    /// quiescent (nothing is in flight yet), but nothing is loaded either:
+    /// that is `initializing`, not `ready`. Afterwards it is `ready` exactly
+    /// when the status is quiescent, and `indexing` otherwise. A workspace
+    /// that failed to load is reported through `health`, not here.
+    fn current_readiness(&self) -> lsp_ext::Readiness {
+        let nothing_loaded_yet = self.workspaces.is_empty() && self.fetch_workspace_error().is_ok();
+        if nothing_loaded_yet {
+            lsp_ext::Readiness::Initializing
+        } else if self.is_fully_ready() {
+            lsp_ext::Readiness::Ready
+        } else {
+            lsp_ext::Readiness::Indexing
+        }
+    }
+
     pub(crate) fn current_status(&self) -> lsp_ext::ServerStatusParams {
         let mut status = lsp_ext::ServerStatusParams {
             health: lsp_ext::Health::Ok,
             quiescent: self.is_fully_ready(),
+            readiness: self.current_readiness(),
             message: None,
         };
         let mut message = String::new();
