@@ -39,7 +39,7 @@ jobs:
               - 'editors/code/**'
 
   proc-macro-srv:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     name: proc-macro-srv
     runs-on: ${{ matrix.os }}
 
@@ -79,7 +79,7 @@ jobs:
         run: "! (cargo tree -p proc-macro-srv-cli -p proc-macro-srv -p proc-macro-srv-cli -p proc-macro-api -i salsa)"
 
   rust:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     name: Rust
     runs-on: ${{ matrix.os }}
     env:
@@ -133,7 +133,7 @@ jobs:
         run: cargo machete
 
   analysis-stats:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     runs-on: ubuntu-latest
     env:
       RUSTC_BOOTSTRAP: 1
@@ -163,7 +163,7 @@ jobs:
         run: ./target/debug/rust-analyzer analysis-stats --with-deps --no-sysroot --no-test $(rustc --print sysroot)/lib/rustlib/src/rust/library/ -q
 
   rustfmt:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     runs-on: ubuntu-latest
 
     steps:
@@ -179,7 +179,7 @@ jobs:
       - run: cargo fmt -- --check
 
   clippy:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     runs-on: ubuntu-latest
 
     steps:
@@ -201,7 +201,7 @@ jobs:
       - run: cargo clippy --all-targets -- -D clippy::disallowed_macros -D clippy::dbg_macro -D clippy::todo -D clippy::print_stdout -D clippy::print_stderr
 
   miri:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     runs-on: ubuntu-latest
 
     steps:
@@ -221,7 +221,7 @@ jobs:
 
   # Weird targets to catch non-portable code
   rust-cross:
-    if: github.repository == 'rust-lang/rust-analyzer'
+    if: github.repository == 'tagawa0525/rust-analyzer'
     name: Rust Cross
     runs-on: ubuntu-latest
 
@@ -253,7 +253,7 @@ jobs:
 
   typescript:
     needs: changes
-    if: github.repository == 'rust-lang/rust-analyzer' && needs.changes.outputs.typescript == 'true'
+    if: github.repository == 'tagawa0525/rust-analyzer' && needs.changes.outputs.typescript == 'true'
     name: TypeScript
     strategy:
       fail-fast: false
